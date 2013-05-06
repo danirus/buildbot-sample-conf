@@ -30,9 +30,9 @@ This directory contains configuration files for Buildbot and Apache.
 
 ## 3. Solution setup
 
-The following setup has been made in a fresh KVM virtual machine running Linux Ubuntu 12.04 with the following packages installed:
+The following setup has been made in a fresh KVM virtual machine running Linux Debian 7.0 (Wheezy) with the following packages installed:
 
-    apache2 python-pip python-virtualenv git
+    apache2 python-pip python-virtualenv git tree
 
 ### 3.1 Install Buildbot
 
@@ -44,16 +44,89 @@ First create the user `buildbot` and then install the package. If you do it in t
 
 ### 3.2 Create master, virtualenvs, and slaves
 
-Do login as `buildbot`. Then create  the master:
+Do login as `buildbot`, and then create  the master:
 
     # su - buildbot
     $ buildbot create-master master
-    mkdir /home/buildbot/master
-    chdir /home/buildbot/master
-    creating master.cfg.sample
-    populating public_html/
-    creating Makefile.sample
-    creating database
-    buildmaster configured in /home/buildbot/master
 
-Logged in as `buildbot` I create 3 `virtualenv <http://www.virtualenv.org>`_s. Along with virtualenv I use `virtualenvwrapper <http://doughellmann.com/2008/05/virtualenvwrapper.html>`_, a set of useful command line extensions to virtualenv. Each virtualenv will have
+Copy the `master.cfg` file available under the same dir as this README.md file you are reading into the master directory created by buildbot, near `master.cfg.sample`.
+
+    $ ls -F master/
+    buildbot.tac  Makefile.sample  master.cfg  master.cfg.sample  public_html/  state.sqlite
+
+Create 3 virtualenvs and add a different version of Django to each of them:
+
+    $ virtualenv --system-site-packages slaves/py27-dj13
+    $ source slaves/py27-dj13/bin/activate
+    (py27-dj13)$ pip install "Django==1.3.7"
+    $ deactivate
+
+    $ virtualenv --system-site-packages slaves/py27-dj14
+    $ source slaves/py27-dj14/bin/activate
+    (py27-dj14)$ pip install "Django==1.4.5"
+    $ deactivate
+
+    $ virtualenv --system-site-packages slaves/py27-dj15
+    $ source slaves/py27-dj15/bin/activate
+    (py27-dj15)$ pip install "Django==1.5.1"
+    $ deactivate
+
+Create 3 slaves. Each of them will run inside a virtualenv to have access to a Django instance. The 3 virtualenvs have to get active on startup time right before launching the slaves. 
+
+I create Buildbot slaves in a directory inside the virtualenv:
+
+    $ buildslave create-slave slaves/py27-dj13/slave localhost:9989 django13 pass
+    $ buildslave create-slave slaves/py27-dj14/slave localhost:9989 django14 pass
+    $ buildslave create-slave slaves/py27-dj15/slave localhost:9989 django15 pass
+
+This is the directory structure of `/home/buildbot`:
+
+    $ tree -d -L 3
+    .
+    ├── master
+    │   └── public_html
+    └── slaves
+     ├── py27-dj13
+     │   ├── bin
+     │   ├── include
+     │   ├── lib
+     │   ├── local
+     │   └── slave
+     ├── py27-dj14
+     │   ├── bin
+     │   ├── include
+     │   ├── lib
+     │   ├── local
+     │   └── slave
+     └── py27-dj15
+	 ├── bin
+	 ├── include
+	 ├── lib
+	 ├── local
+	 └── slave
+
+    21 directories
+
+
+### 3.3 Setup the app repository in GitHub
+
+For the purpose of this example you can clone [django-sample-app](https://github.com/danirus/django-sample-app). You will later add the URL of your copy in GitHub to your Buildbot configuration.
+
+
+### 3.4 Setup the project repository in the server
+
+[Django-sample-project](https://github.com/danirus/django-sample-project) is the implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/). It has an extra dependency on [django-sample-app](https://github.com/danirus/django-sample-app) and a few simple test cases. 
+
+One of the test cases makes implicit use of the functionality provided by django-sample-app. Given that changes in the sample app may potentially damage the project, one of the project's test cases will cover such a situation. 
+
+Buildbot's configuration will run project's tests right after running app's. If either app's or project's tests fail a notification will be sent and your operations team will be able to hold the changes in development until the bug is fixed.
+
+Clone [django-sample-project](https://github.com/danirus/django-sample-project), create a bare Git repository from it and upload it to your server.
+
+    $ git clone git://github.com/danirus/django-sample-project.git
+    $ git clone --bare django-sample-project/.git/ /tmp/django-sample-project.git
+    $ scp -r /tmp/django-sample-project.git server:/home/git/django-sample-project.git 
+
+
+### 3.5 Setup Apache VirtualHosts
+
