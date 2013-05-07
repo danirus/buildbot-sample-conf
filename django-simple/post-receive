@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while read oldrev newrev refname
+do
+    echo $oldrev $newrev $refname | /usr/bin/python /usr/share/buildbot/contrib/git_buildbot.py --repository file:///home/git/django-sample-project.git
+done
