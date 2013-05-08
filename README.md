@@ -4,6 +4,6 @@ This repository contains several sample setups to do Continuous Integration of w
 
 Each directory represents a sample configuration and provides a README.md file with details on the use case.
 
-A blog story to introduce the service: [Continuous integration of webapps with Buildbot](http://danir.us/blog/stories/2013/apr/30/continuous-integration-web-apps-buildbot/).
+A blog story to introduce the service: Continuous integration of webapps with Buildbot.
 
 If you have a new use case feel free to add it.

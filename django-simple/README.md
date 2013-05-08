@@ -1,6 +1,6 @@
 # django-simple
 
-This directory contains configuration files for Buildbot and Apache.
+Run unittests of a Django app and a Django project. Contains configuration files for Buildbot and Apache.
 
 ## 1. Scenario
 
@@ -43,7 +43,7 @@ First create the user `buildbot` and then install the package. If you do it in t
     # apt-get install buildbot
 
 
-### 3.2 Create master, virtualenvs, and slaves
+#### 3.1.1 Create the master
 
 Do login as `buildbot`, and then create  the master:
 
@@ -55,7 +55,16 @@ Copy the `master.cfg` file available under the same dir as this README.md file y
     $ ls -F master/
     buildbot.tac  master.cfg  master.cfg.sample  public_html/  state.sqlite
 
-Create 3 virtualenvs and add a different version of Django to each of them:
+
+#### 3.1.2 Create the virtualenvs
+
+Each slave will run a different combination of Python and Django to cover supported releases of the latter. These are the combinations of Python and Django to reproduce:
+
+* Python 2.7 and Django 1.4
+* Python 2.7 and Django 1.5
+* Python 3.2 and Django 1.5
+
+Let's create the three virtualenvs:
 
     $ virtualenv --system-site-packages slaves/py27-dj14
     $ source slaves/py27-dj14/bin/activate
@@ -72,13 +81,16 @@ Create 3 virtualenvs and add a different version of Django to each of them:
     (py32-dj15)$ pip install "Django==1.5.1"
     $ deactivate
 
-Create 3 slaves. Each of them will run inside a virtualenv to have access to a Django instance. The 3 virtualenvs have to get active on startup time right before launching the slaves.
+The 3 virtualenvs have to get active on startup time right before launching the slaves. We will see that later.
 
-The syntax of the ``buildslave`` command is as follows:
+
+#### 3.1.3 Create the slaves
+
+Each of the 3 slaves will run inside their own virtualenv. The syntax of the ``buildslave`` command is as follows:
 
     $ buildslave create-slave <basedir> <master-addr/port> <name> <password>
 
-I create Buildbot slaves in a directory inside the virtualenv:
+Each slave will live in a directory inside the virtualenv directory structure:
 
     $ buildslave create-slave slaves/py27-dj14/slave localhost:9989 py27dj14 pass
     $ buildslave create-slave slaves/py27-dj15/slave localhost:9989 py27dj15 pass
@@ -112,47 +124,90 @@ This is the directory structure of `/home/buildbot`:
     20 directories
 
 
-### 3.3 Setup the app repository in GitHub
+### 3.2 Setup the web project repository in the server
 
-For the purpose of this example you can clone [django-sample-app](https://github.com/danirus/django-sample-app). You will later add the URL of your copy in GitHub to your Buildbot configuration.
+[Django-sample-project](https://github.com/danirus/django-sample-project) is an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/) with an extra dependency on [django-sample-app](https://github.com/danirus/django-sample-app) and a couple of simple test cases. One of the test cases makes implicit use of the functionality provided by django-sample-app. Given that changes in the sample app may damage the project there will be a test case to cover such a situation. 
 
 
-### 3.4 Setup the project repository in the server
+#### 3.2.1 Create the git user and group
 
-[Django-sample-project](https://github.com/danirus/django-sample-project) is an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/) with an extra dependency on [django-sample-app](https://github.com/danirus/django-sample-app) and a couple of simple test cases. 
-
-One of the test cases makes implicit use of the functionality provided by django-sample-app. Given that changes in the sample app may damage the project there will be a test case to cover such a situation. 
-
-Buildbot configuration will run the project's unittests right after running app's unittests. If either app's or project's unittests fail a notification will be sent in order to fix the bug.
-
-#### 3.4.1 Create git user/group and grant access to your user
-
-Before creating the self hosted repository I assume you have a git user/group in your server with the home directory under ``/home/git``. In the server:
+For the purpose of this example configuration the git repository will live in the same server where we run Buildbot. Create a git user and group in the server and use ``/home/git`` as the home directory:
 
     # adduser --system --home /home/git --shell /bin/bash \
               --gecos "GIT Source Code Management" --group \
               --disabled-password git
-    # chmod g+w /home/git/ -R 
 
-Copy your ssh ``id_rsa.pub`` key from your local machine to the server's ``/home/git/.ssh/authorized_keys`` and add your username to the git group in ``/etc/groups``. 
+Add your username in the server to the git group in ``/etc/groups`` and eventually copy your ssh key to ``/home/git/.ssh/authorized_keys`` to be able to transfer the repository to the server. 
 
-#### 3.4.2 Create the git repository in the server
+#### 3.2.2 Create the git repository in the server
 
-Then clone [django-sample-project](https://github.com/danirus/django-sample-project), create a bare Git repository from it and upload it to your server:
+Clone [django-sample-project](https://github.com/danirus/django-sample-project), create a bare Git repository from it and upload it to the server:
 
     $ git clone git://github.com/danirus/django-sample-project.git
     $ git clone --bare django-sample-project/.git/ /tmp/django-sample-project.git
-    $ scp -r /tmp/django-sample-project.git git@yourserverip:/home/git/django-sample-project.git 
+    $ scp -r /tmp/django-sample-project.git git@server:/home/git/django-sample-project.git 
 
-#### 3.4.3 Create the post-receive hook
+Once the repository is in the server you can clone it in your desktop. Later you will make changes to the repository and push them to trigger Buildbot's builds.
 
-Create a new file ``post-receive`` in the server's git repository, in the ``/home/git/django-sample-project.git/hooks/`` directory, with the following content:
+    $ git clone ssh://you@server/home/git/django-sample-project.git private-project
 
-    
 
-#### 3.4.4 Clone the repository in your desktop
+#### 3.2.3 Create the post-receive hook
 
-Once the bare repository has been copied to the server and you have access to it, clone the repository in your desktop. Later you will make changes to the repository and push them to trigger Buildbot builds:
+Create a new file ``post-receive`` in the server's git repository. Copy the ``post-receive`` file (in the same directory as this very README.md file) in ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a buildbot script that notifies buildbot on repository changes:  
+
+    #!/bin/bash
+    while read oldrev newrev refname
+    do
+	echo $oldrev $newrev $refname | /usr/bin/python /usr/share/buildbot/contrib/git_buildbot.py --repository file:///home/git/django-sample-project.git
+    done
+
+If Buildbot's master is in a different host:port add ``--master ipaddress:port`` along with the --repository option.
+
+Now Buildbot will get notified with every ``git push`` to the web project repository.
+
+
+### 3.3 Setup the web app repository in GitHub
+
+Fork [django-sample-app](https://github.com/danirus/django-sample-app). Once forked go to your repository settings, click on Service Hooks, and WebHook URLS. Then add the URL of your Buildbot master with the path to the GitHub hook:
+
+    http://buildbot.example.com/change_hook/github
+
+The path to Buildbot's GitHub hook defaults to `change_hook/github`. 
+
+Checkout the [GitHub help page on Post-Receive Hooks](https://help.github.com/articles/post-receive-hooks) if you need help.
+
+
+### 3.4 Setup Buildbot
+
+Buildbot's ``master.cfg`` file puts together all the components of a Buildbot environment:
+
+* Slaves
+* Source code changes
+* Schedulers
+* Build steps
+* Builders
+* Status interfaces (Web, Email, IRC...)
+
+Next sections go over the [master.cfg](https://raw.github.com/danirus/buildbot-sample-conf/master/django-simple/master.cfg) configuration file available in this very directory.
+
+#### 3.4.1 Slaves
+
+
+
+#### 3.4.2 Source code changes
+
+#### 3.4.3 Schedulers and filters
+
+#### 3.4.5 Build steps and build factories
+
+#### 3.4.6 Builders
+
+#### 3.4.7 Status interfaces
+
+##### 3.4.7.1 Web Interface
+
+##### 3.4.7.2 Mailer
 
 ### 3.5 Setup Apache VirtualHosts
 
