@@ -1,36 +1,36 @@
 # django-simple
 
-Run unittests of a Django app and a Django project. Contains configuration files for Buildbot and Apache.
+This document describes how to do continuous integration of a Django app and a Django project. It contains configuration files for Buildbot, Git and Apache.
 
 ## 1. Scenario
 
- 1. One public FOSS sample Django app.
- 2. One private Django project that uses the app.
- 3. Buildbot will run tests suites for both, the app and the project.
- 4. App's unittests will run when new changes hit app's repository.
- 5. Project's unittests will run when new changes hit project's repository and right after app's unittests have run.
+ 1. One public Django pluggable application.
+ 2. One private Django project that uses the previous application.
+ 3. Buildbot has to run tests for both, the app and the project.
+ 4. Buildbot will build the app when changes hit app's repository.
+ 5. Buildbot will build the project when changes hit project's repository and right after building the app.
  6. App's repository is public and hosted in GitHub.
  7. Project's repository is private and hosted in an in-house server.
- 8. App and project have to run unittests using the most 3 recent versions of Django.
- 9. A web available to the public will show how the app builds.
- 10. A private web will show how the app and the project build.
+ 8. App and project have to be build under supported versions of Python/Django.
+ 9. Buildbot has to show a public web with app's builds results.
+ 10. Buildbot has to show a private web with both app's and project's builds results.
 
 
 ## 2. Solution
 
  1. Buildbot's master and slave will live in the same machine.
- 2. There will be 3 python virtualenv, each using a different version of Django.
+ 2. There will be 3 Python virtualenv to support Django v1.4/v1.5 under Python v2.7, and Django v1.5 under Python v3.2.
  3. Buildbot will have 3 slaves one per virtualenv.
  4. Virtualenvs will get active at OS startup time, before launching slaves.
  5. Apache will be the web server listening on port 80, and will handle requests to both public and private Buildbot web interfaces.
- 6. Apache and Buildbot will accept POST requests from GitHub.
- 7. App's GitHub repository will get a new WebHook URL pointing to our web server.
+ 6. Buildbot will accept POST requests from GitHub through Apache.
+ 7. App's GitHub repository will get a new WebHook URL pointing to the web server.
  8. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
 
 
 ## 3. Solution setup
 
-The following setup has been made in a fresh KVM virtual machine running Ubuntu Linux 12.04 with the following extra packages installed:
+The following setup has been made in a fresh KVM virtual machine running Ubuntu Server 12.04 with the following extra packages installed:
 
     apache2 python-pip python-virtualenv python3 git tree 
 
@@ -50,7 +50,7 @@ Do login as `buildbot`, and then create  the master:
     # su - buildbot
     $ buildbot create-master master
 
-Copy the `master.cfg` file available under the same dir as this README.md file you are reading into the master directory created by buildbot, near `master.cfg.sample`.
+Copy the `master.cfg` file (available in this very directory, close to the README.md file you are reading) into the master directory created by buildbot, near `master.cfg.sample`.
 
     $ ls -F master/
     buildbot.tac  master.cfg  master.cfg.sample  public_html/  state.sqlite
@@ -58,7 +58,7 @@ Copy the `master.cfg` file available under the same dir as this README.md file y
 
 #### 3.1.2 Create the virtualenvs
 
-Each slave will run a different combination of Python and Django to cover supported releases of the latter. These are the combinations of Python and Django to reproduce:
+Each slave will run a different combination of Python/Django to cover the supported releases of the latter. These are the combinations to reproduce:
 
 * Python 2.7 and Django 1.4
 * Python 2.7 and Django 1.5
@@ -101,43 +101,46 @@ This is the directory structure of `/home/buildbot`:
     $ tree -d -L 3
     .
     ├── master
-    │   └── public_html
+    │   └── public_html
     └── slaves
-     ├── py27-dj14
-     │   ├── bin
-     │   ├── include
-     │   ├── lib
-     │   ├── local
-     │   └── slave
-     ├── py27-dj15
-     │   ├── bin
-     │   ├── include
-     │   ├── lib
-     │   ├── local
-     │   └── slave
-     └── py32-dj15
-	 ├── bin
-	 ├── include
-	 ├── lib
-	 └── slave
+        ├── py27-dj14
+        │   ├── bin
+        │   ├── include
+        │   ├── lib
+        │   ├── local
+        │   └── slave
+        ├── py27-dj15
+        │   ├── bin
+        │   ├── include
+        │   ├── lib
+        │   ├── local
+        │   └── slave
+        └── py32-dj15
+            ├── bin
+            ├── include
+            ├── lib
+            └── slave
 
     20 directories
 
 
 ### 3.2 Setup the web project repository in the server
 
-[Django-sample-project](https://github.com/danirus/django-sample-project) is an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/) with an extra dependency on [django-sample-app](https://github.com/danirus/django-sample-app) and a couple of simple test cases. One of the test cases makes implicit use of the functionality provided by django-sample-app. Given that changes in the sample app may damage the project there will be a test case to cover such a situation. 
+[Django-sample-project](https://github.com/danirus/django-sample-project) is an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/) with an extra dependency on [django-sample-app](https://github.com/danirus/django-sample-app) and a couple of simple test cases. 
+
+For this example we use the code of [Django-sample-project](https://github.com/danirus/django-sample-project) to represent the project.
 
 
 #### 3.2.1 Create the git user and group
 
-For the purpose of this example configuration the git repository will live in the same server where we run Buildbot. Create a git user and group in the server and use ``/home/git`` as the home directory:
+The git repository of the project will live in the same server as Buildbot. Create a git user and group in the server and use ``/home/git`` as the home directory:
 
     # adduser --system --home /home/git --shell /bin/bash \
               --gecos "GIT Source Code Management" --group \
               --disabled-password git
 
 Add your username in the server to the git group in ``/etc/groups`` and eventually copy your ssh key to ``/home/git/.ssh/authorized_keys`` to be able to transfer the repository to the server. 
+
 
 #### 3.2.2 Create the git repository in the server
 
@@ -154,7 +157,7 @@ Once the repository is in the server you can clone it in your desktop. Later you
 
 #### 3.2.3 Create the post-receive hook
 
-Create a new file ``post-receive`` in the server's git repository. Copy the ``post-receive`` file (in the same directory as this very README.md file) in ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a buildbot script that notifies buildbot on repository changes:  
+Create a new file ``post-receive`` in the server's git repository. Copy the ``post-receive`` file (in the same directory as this very README.md file) in ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a buildbot script that notifies buildbot when changes hit the repository:  
 
     #!/bin/bash
     while read oldrev newrev refname
@@ -175,7 +178,8 @@ Fork [django-sample-app](https://github.com/danirus/django-sample-app). Once for
 
 The path to Buildbot's GitHub hook defaults to `change_hook/github`. 
 
-Checkout the [GitHub help page on Post-Receive Hooks](https://help.github.com/articles/post-receive-hooks) if you need help.
+* Checkout the [GitHub help page on Post-Receive Hooks](https://help.github.com/articles/post-receive-hooks) if you need help with GitHub Web Hooks.
+* Checkout the [Change Hooks](http://docs.buildbot.net/0.8.4p2/Change-Hooks.html) page of the Buildbot Manual to find out more on the GitHub hook.
 
 
 ### 3.4 Setup Buildbot
@@ -189,7 +193,9 @@ Buildbot's ``master.cfg`` file puts together all the components of a Buildbot en
 * Builders
 * Status interfaces (Web, Email, IRC...)
 
-Next sections go over the [master.cfg](https://raw.github.com/danirus/buildbot-sample-conf/master/django-simple/master.cfg) configuration file available in this very directory.
+The following sections go over the details in the [master.cfg](https://raw.github.com/danirus/buildbot-sample-conf/master/django-simple/master.cfg) file (available in this very directory). You copied the file in the step 3.1.1 to the master directory.
+
+After reading the next sections open the file and read the comments.
 
 #### 3.4.1 Slaves
 
