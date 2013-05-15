@@ -1,6 +1,6 @@
-# django-simple
+# Buildbot Sample Configuration for Django
 
-This document describes how to do continuous integration of a Django app and a Django project. It contains configuration files for Buildbot, Git and Apache.
+This document describes how to do continuous integration of a django web application and a django web project. It contains configuration files for Buildbot, Git and Apache.
 
 ## 1. Scenario
 
