@@ -56,10 +56,10 @@ The following steps create the private in-house Git repository for the project. 
 Clone a bare copy of [django-sample-project](https://github.com/danirus/django-sample-project) to start off the in-house repository:
 
     root@server:~# su - git
-    git@server:~$ git clone git://github.com/danirus/django-sample-project.git
+    git@server:~$ git clone --bare git://github.com/danirus/django-sample-project.git
 
 
-Copy the ``post-receive`` file (that sits close to this very README.md you are reading) to ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a script that will notify buildbot when changes hit the project's repository.
+Copy the ``post-receive`` file to ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a script that will notify buildbot when changes hit the project's repository.
 
 If your Buildbot's master lives in a different host:port add the ``--master ipaddress:port`` option to the hook along with the --repository option.
 
@@ -197,6 +197,8 @@ Visit the URL exposed by Buildbot: http://buildbot-server-ip:8010. Visit the wat
 
 
 Builders should be idle now in the web interface. Click on any of the builders and click on Force to immediately run a build.
+
+Buildbot's master components (change source, schedulers, filters, build steps, builder factories and builders) required for this step are represented in the following figure:
 
 ![Buildbot configuration layout to build a Django web project](http://danir.us/media/pictures/2013/May/22/Buildbot-Django-Project.png)
 
