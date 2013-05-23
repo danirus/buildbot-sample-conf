@@ -1,6 +1,6 @@
 # Buildbot Sample Configuration
 
-This document describes how to do continuous integration of webapps with Buildbnot. It contains configuration files for Buildbot, Git and Apache.
+This document describes how to do continuous integration of webapps with Buildbot. It contains configuration files for Buildbot, Git and Apache.
 
 ## 1. Scenario
 
@@ -9,8 +9,8 @@ This document describes how to do continuous integration of webapps with Buildbn
  3. Buildbot has to run tests for both, the app and the project.
  4. Buildbot will build the app when changes hit app's repository.
  5. Buildbot will build the project when changes hit project's repository and right after building the app.
- 6. App's repository is public and hosted in GitHub.
- 7. Project's repository is private and hosted in an in-house server.
+ 6. Project's repository is private and hosted in an in-house server.
+ 7. App's repository is public and hosted in GitHub.
  8. App and project have to be build under supported versions of Python/Django.
  9. Buildbot has to show a public web with app's builds results.
  10. Buildbot has to show a private web with both app's and project's builds results.
@@ -22,10 +22,10 @@ This document describes how to do continuous integration of webapps with Buildbn
  2. There will be 3 Python virtualenv to support Django v1.4/v1.5 under Python v2.7, and Django v1.5 under Python v3.2.
  3. Buildbot will have 3 slaves one per virtualenv.
  4. Virtualenvs will get active at OS startup time, before launching slaves.
- 5. Apache will be the web server listening on port 80, and will handle requests to both public and private Buildbot web interfaces.
- 6. Buildbot will accept POST requests from GitHub through Apache.
- 7. App's GitHub repository will get a new WebHook URL pointing to the web server.
- 8. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
+ 5. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
+ 6. Buildbot will accept HTTP POST requests from GitHub.
+ 7. App's GitHub repository will get a new WebHook URL pointing to Buildbot's web interface.
+ 8. Apache or Nginx will handle requests to both public and private Buildbot web interfaces.
 
 
 ## 3. Setup
@@ -34,8 +34,10 @@ The following setup has been made in a fresh KVM virtual machine running Ubuntu 
 
     root@server:~# apt-get install apache2 python-pip python-virtualenv python3 git tree 
 
+The Setup consists of the following steps:
+
 1. Setup the in-house Git repository for the Django project
-2. Setup the Github repository for the Django app
+2. Setup the GitHub Git repository for the Django app
 3. Install Buildbot
 4. Configure Buildbot
 5. Web servers setup
@@ -43,23 +45,22 @@ The following setup has been made in a fresh KVM virtual machine running Ubuntu 
 
 ### 3.1 Setup the in-house Git repository for the Django project
 
-[Django-sample-project](https://github.com/danirus/django-sample-project) represents the private Django project. It's the implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/).
+[Django-sample-project](https://github.com/danirus/django-sample-project) represents the private Django project. It's an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/).
 
 The following steps create the private in-house Git repository for the project.
 
 
 #### 3.1.1 Create the git user and group
 
-The git repository of the project will live in the same server as Buildbot. Create a git user and group in the server and use ``/home/git`` as the home directory:
+For the sake of this example the Git repository for the project lives in the same server as Buildbot. Create a git user and group, and add your username to the git group: 
 
     root@server:~# useradd -m -s /bin/bash git
-
-Add your username in the server to the git group in ``/etc/groups`` and copy your ssh key to ``/home/git/.ssh/authorized_keys`` to be able to transfer the repository to the server. 
+    root@server:~# usermod -G git youruser
 
 
 #### 3.1.2 Create the git repository in the server
 
-Clone the bare [django-sample-project](https://github.com/danirus/django-sample-project) repository to start off the in-house Git repository for the project:
+Clone a bare copy of [django-sample-project](https://github.com/danirus/django-sample-project) to start off the in-house Git repository for the project:
 
     root@server:~# su - git
     git@server:~$ git clone git://github.com/danirus/django-sample-project.git
@@ -69,20 +70,20 @@ Clone the bare [django-sample-project](https://github.com/danirus/django-sample-
 
 Copy the ``post-receive`` file (that sits close to this very README.md you are reading) to ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a script that will notify buildbot when changes hit the project's repository.
 
-If your Buildbot's master lives in a different host:port add the ``--master ipaddress:port`` option to the hook, along with the --repository option.
+If your Buildbot's master lives in a different host:port add the ``--master ipaddress:port`` option to the hook along with the --repository option.
 
-With the hook in place Buildbot will get notified on every ``git push`` to the repository.
+With this hook in place Buildbot will get notified on every ``git push`` to the repository.
 
 
 ### 3.2 Setup the Github repository for the Django app
 
-For this step the server has to be reacheable from the outside world as GitHub will post a HTTP request to Buildbot. 
+This step requires the server to be reacheable from the outside world as GitHub will post a HTTP request to Buildbot. If it's not (because you are playing around with a VM, just do the same with the app as what you've done with the project).
 
-Fork [django-sample-app](https://github.com/danirus/django-sample-app) in your own GitHub account. Then go to the repository settings, click on Service Hooks, and WebHook URLS. Then add the URL of your Buildbot master with the path to the GitHub hook:
+Fork [django-sample-app](https://github.com/danirus/django-sample-app) in your own GitHub account. Then go to the repository settings, click on Service Hooks, and WebHook URLS. Add the URL of your Buildbot master with the path to the GitHub hook:
 
-    http://buildbot.example.com/change_hook/github
+    http://buildbot.myservice.info/change_hook/github
 
-Buildbot default path for GitHub defaults to `change_hook/github`.
+Buildbot's path for GitHub defaults to `change_hook/github`.
 
 * [GitHub help page on Post-Receive Hooks](https://help.github.com/articles/post-receive-hooks)
 * [Buildbot Change Hooks](http://docs.buildbot.net/0.8.4p2/Change-Hooks.html)
@@ -96,15 +97,11 @@ Create the user `buildbot` and install the package:
     # apt-get install buildbot
 
 
-#### 3.3.1 Create the master
-
 Login as `buildbot` and create the master:
 
     # su - buildbot
     $ buildbot create-master master
 
-
-#### 3.3.2 Create the virtualenvs
 
 Each slave will run a different combination of Python and Django:
 
@@ -129,8 +126,6 @@ Create the virtualenvs:
     (py32-dj15)$ pip install "Django==1.5.1"
     $ deactivate
 
-
-#### 3.3.3 Create the slaves
 
 Each slave runs inside their own virtualenv. The syntax of the ``buildslave`` command is as follows:
 
