@@ -82,14 +82,14 @@ Buildbot's path for GitHub defaults to `change_hook/github`.
 
 Create the user `buildbot` and install the package:
 
-    # useradd -m -s /bin/bash buildbot
-    # apt-get install buildbot
+    root@server:~# useradd -m -s /bin/bash buildbot
+    root@server:~# apt-get install buildbot
 
 
 Login as `buildbot` and create the master:
 
-    # su - buildbot
-    $ buildbot create-master master
+    root@server:~# su - buildbot
+    buildbot@server:~$ buildbot create-master master
 
 
 Each slave will run a different combination of Python and Django:
@@ -100,35 +100,35 @@ Each slave will run a different combination of Python and Django:
 
 Create the virtualenvs:
 
-    $ virtualenv slaves/py27-dj14
-    $ source slaves/py27-dj14/bin/activate
-    (py27-dj14)$ pip install "Django==1.4.5"
-    $ deactivate
+    buildbot@server:~$ virtualenv slaves/py27-dj14
+    buildbot@server:~$ source slaves/py27-dj14/bin/activate
+    (py27-dj14)buildbot@server:~$ pip install "Django==1.4.5"
+    (py27-dj14)buildbot@server:~$ deactivate
 
-    $ virtualenv slaves/py27-dj15
-    $ source slaves/py27-dj15/bin/activate
-    (py27-dj15)$ pip install "Django==1.5.1"
-    $ deactivate
+    buildbot@server:~$ virtualenv slaves/py27-dj15
+    buildbot@server:~$ source slaves/py27-dj15/bin/activate
+    (py27-dj15)buildbot@server:~$ pip install "Django==1.5.1"
+    (py27-dj15)buildbot@server:~$ deactivate
 
-    $ virtualenv -p python3 slaves/py32-dj15
-    $ source slaves/py32-dj15/bin/activate
-    (py32-dj15)$ pip install "Django==1.5.1"
-    $ deactivate
+    buildbot@server:~$ virtualenv -p python3 slaves/py32-dj15
+    buildbot@server:~$ source slaves/py32-dj15/bin/activate
+    (py32-dj15)buildbot@server:~$ pip install "Django==1.5.1"
+    (py32-dj15)buildbot@server:~$ deactivate
 
 
 Each slave runs inside their own virtualenv. The syntax of the ``buildslave`` command is as follows:
 
-    $ buildslave create-slave <basedir> <master-addr/port> <name> <password>
+    buildslave create-slave <basedir> <master-addr/port> <name> <password>
 
 Create the slaves:
 
-    $ buildslave create-slave slaves/py27-dj14/slave localhost:9989 py27dj14 pass
-    $ buildslave create-slave slaves/py27-dj15/slave localhost:9989 py27dj15 pass
-    $ buildslave create-slave slaves/py32-dj15/slave localhost:9989 py32dj15 pass
+    buildbot@server:~$ buildslave create-slave slaves/py27-dj14/slave localhost:9989 py27dj14 pass
+    buildbot@server:~$ buildslave create-slave slaves/py27-dj15/slave localhost:9989 py27dj15 pass
+    buildbot@server:~$ buildslave create-slave slaves/py32-dj15/slave localhost:9989 py32dj15 pass
 
 This is the directory structure of `/home/buildbot`:
 
-    $ tree -d -L 3
+    buildbot@server:~$ tree -d -L 3
     .
     ├── master
     │   └── public_html
@@ -156,11 +156,53 @@ This is the directory structure of `/home/buildbot`:
 
 ### 3.4 Configure Buildbot in 3 steps
 
-### 3.4.1 Setup only the web project
+I approach the configuration in three steps to make a kind of tutorial. Skip it if you want by using the file `master.cfg.final`.
 
-### 3.4.2 Add the setup for the web app
+In the first step Buildbot will build only the project. Then I'll add builds for the app. And at the end I'll add steps to trigger the build of the project after building the app. Read Continuous Integration of webapps with Buildbot to get more wording introduction to this Buildbot Sample Configuration.
 
-### 3.4.3 Build the project after building the app
+In the following steps you will run Buidlbot from the command line. Use the script provided in the following up sections  to integrate it as part of the server startup process. 
+
+#### 3.4.1 Setup only the web project
+
+Copy the `master.cfg.project` file to your `/home/buildbot/master/` directory and rename it to `master.cfg`. Then start the master and the three slaves:
+
+    buildbot@@server:~$ buildbot start master
+    
+The command will output a bunch of log entries and finish with a line saying **The buildmaster appears to have (re)started correctly**. 
+
+You will get enough information as to guess what's the problem if the command goes wrong. In such a case edit the `master.cfg` file, fix the bug and restart the service with:
+
+    buildbot@server:~$ buildbot restart master
+
+
+Visit the URL exposed by Buildbot: http://buildbot-server-ip:8010. Visit the waterfall and see that the 3 builders are offline. Start the slaves:
+
+    buildbot@server:~$ source slaves/py27-dj14/bin/activate
+    (py27-dj14)buildbot@server:~$ buildslave start slaves/py27-dj14/slave
+    [...some log entries...]
+    The buildslave appears to have (re)started correctly
+    (py27-dj14)buildbot@server:~$ deactivate
+
+    buildbot@server:~$ source slaves/py27-dj15/bin/activate
+    (py27-dj15)buildbot@server:~$ buildslave start slaves/py27-dj15/slave
+    [...some log entries...]
+    The buildslave appears to have (re)started correctly
+    (py27-dj15)buildbot@server:~$ deactivate
+
+    buildbot@server:~$ source slaves/py32-dj15/bin/activate
+    (py32-dj15)buildbot@server:~$ buildslave start slaves/py32-dj15/slave
+    [...some log entries...]
+    The buildslave appears to have (re)started correctly
+    (py32-dj15)buildbot@server:~$ deactivate
+
+
+Builders should be idle now in the web interface. Click on any of the builders and click on Force to immediately run a build.
+
+![Buildbot configuration layout to build a Django web project](http://danir.us/media/pictures/2013/May/22/Buildbot-Django-Project.png)
+
+#### 3.4.2 Add the setup for the web app
+
+#### 3.4.3 Build the project after building the app
 
 ### 3.5 Web servers setup
 
