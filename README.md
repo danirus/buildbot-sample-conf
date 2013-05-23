@@ -45,34 +45,23 @@ The Setup consists of the following steps:
 
 ### 3.1 Setup the in-house Git repository for the Django project
 
-[Django-sample-project](https://github.com/danirus/django-sample-project) represents the private Django project. It's an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/).
+[Django-sample-project](https://github.com/danirus/django-sample-project) it's an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/). It represents the private Django project for the sample configuration.
 
-The following steps create the private in-house Git repository for the project.
-
-
-#### 3.1.1 Create the git user and group
-
-For the sake of this example the Git repository for the project lives in the same server as Buildbot. Create a git user and group, and add your username to the git group: 
+The following steps create the private in-house Git repository for the project. Create a git user and group, and add your username to the git group: 
 
     root@server:~# useradd -m -s /bin/bash git
     root@server:~# usermod -G git youruser
 
 
-#### 3.1.2 Create the git repository in the server
-
-Clone a bare copy of [django-sample-project](https://github.com/danirus/django-sample-project) to start off the in-house Git repository for the project:
+Clone a bare copy of [django-sample-project](https://github.com/danirus/django-sample-project) to start off the in-house repository:
 
     root@server:~# su - git
     git@server:~$ git clone git://github.com/danirus/django-sample-project.git
 
 
-#### 3.1.3 Create the post-receive hook
-
 Copy the ``post-receive`` file (that sits close to this very README.md you are reading) to ``/home/git/django-sample-project.git/hooks/``. The post-receive hook runs a script that will notify buildbot when changes hit the project's repository.
 
 If your Buildbot's master lives in a different host:port add the ``--master ipaddress:port`` option to the hook along with the --repository option.
-
-With this hook in place Buildbot will get notified on every ``git push`` to the repository.
 
 
 ### 3.2 Setup the Github repository for the Django app
