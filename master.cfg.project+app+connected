@@ -15,11 +15,13 @@ from buildbot.process.properties import Property
 
 repos = {
     'webproject': {
-        'url': 'ssh://buildbot@server/home/git/django-sample-project.git',
+#        'url': 'ssh://buildbot@server/home/git/django-sample-project.git',
+        'url': '/home/git/django-sample-project.git',
         'branch': 'master'
     },
     'webapp': {
-        'url': 'https://github.com/danirus/django-sample-app',
+        'url': 'https://github.com/<yourGitHubUser>/django-sample-app.git',
+#        'url': '/home/git/django-sample-app.git',
         'branch': 'master'
     },
 }
@@ -91,7 +93,9 @@ webapp_chfilter = filter.ChangeFilter(repository=repos['webapp']['url'],
 webapp_sch = SingleBranchScheduler(
     name='webapp-sch',
     change_filter=webapp_chfilter,
-    builderNames=['webapp-py27dj14', 'webapp-py27dj15', 'webapp-py32dj15'],
+    builderNames=['webapp-py27dj14', 
+                  'webapp-py27dj15', 
+                  'webapp-py32dj15'],
     treeStableTimer=None)
 
 c['schedulers'] = [webproject_sch, 
@@ -120,40 +124,49 @@ webproject_steps = [
                  descriptionDone='installed',
                  command=['pip', 'install', '-r', 'requirements.pip'],
                  haltOnFailure=True),
-    ShellCommand(name='coverage', 
-                 description='running coverage',
-                 descriptionDone='coverage',
-                 command=['python', 
+    ShellCommand(name='tests', 
+                 description='testing',
+                 descriptionDone='tested',
+                 command=['coverage', 
+                          'run',
                           'manage.py', 
-                          'test_coverage', 
+                          'test', 
                           'polls',
                           '--settings=mysite.test_settings'],
                  haltOnFailure=True),
-    ShellCommand(name='tests',
-                 description='testing',
-                 descriptionDone='tested',
-                 command=['python',
-                          'manage.py',
-                          'test',
-                          'polls',
-                          '--settings=mysite.test_settings'],
+    ShellCommand(name='coverage',
+                 description='creating coverage report',
+                 descriptionDone='coverage report created',
+                 command=['coverage',
+                          'report',
+                          '--include=polls/*',
+                          '--omit=polls/tests/*'],
                  haltOnFailure=True),
 ]
 webproject_factory = BuildFactory(webproject_steps)
 
 webapp_steps = [
-    Git(name='fetch', mode='full', repourl=Property('repository'),
+    Git(name='fetch', mode='full', #repourl=Property('repository'),
+        repourl=repos['webapp']['url'],
         haltOnFailure=True),
     ShellCommand(name='requirements',
                  description='installing requirements',
-                 descriptionDone='installed',
-                 command=['pip', 'install', '-r', 'requirements'],
+                 descriptionDone='requirements installed',
+                 command=['pip', 'install', '-r', 'requirements_tests.pip'],
                  haltOnFailure=True),
     ShellCommand(name='tests',
                  description='testing',
                  descriptionDone='tested',
-                 command=['python', 'setup.py', 'test'],
+                 command=['coverage', 'run', 'setup.py', 'test'],
                  haltOnFailure=True),
+    ShellCommand(name='coverage',
+                 description='creating coverage report',
+                 descriptionDone='coverage report created',
+                 command=['coverage',
+                          'report',
+                          '--include=sample_app/*',
+                          '--omit=sample_app/tests/*'],
+                 haltOnFailure=True)
 ]
 
 trigger_webproject_py27dj14_step = Trigger(
@@ -166,9 +179,9 @@ trigger_webproject_py32dj15_step = Trigger(
     schedulerNames=['webproject-py32dj15-tsch'], 
     waitForFinish=True, alwaysUseLatest=True)
 
-webapp_py27dj14_steps = app_steps + [trigger_webproject_py27dj14_step]
-webapp_py27dj15_steps = app_steps + [trigger_webproject_py27dj15_step]
-webapp_py32dj15_steps = app_steps + [trigger_webproject_py32dj15_step]
+webapp_py27dj14_steps = webapp_steps + [trigger_webproject_py27dj14_step]
+webapp_py27dj15_steps = webapp_steps + [trigger_webproject_py27dj15_step]
+webapp_py32dj15_steps = webapp_steps + [trigger_webproject_py32dj15_step]
 
 webapp_py27dj14_factory = BuildFactory(webapp_py27dj14_steps)
 webapp_py27dj15_factory = BuildFactory(webapp_py27dj15_steps)
@@ -233,7 +246,7 @@ smtp_kwargs = {
 
 c['status'] = [
     # web interface with github notification entry point active 
-    html.WebStatus(http_port=8011, authz=authz_cfg,
+    html.WebStatus(http_port=8010, authz=authz_cfg,
                    change_hook_dialects={'github': True}),
 
     # send email to developers whose changes were included in the build

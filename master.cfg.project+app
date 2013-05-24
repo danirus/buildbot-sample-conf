@@ -19,8 +19,8 @@ repos = {
         'branch': 'master'
     },
     'webapp': {
-#        'url': 'https://github.com/danirus/django-sample-app.git',
-        'url': '/home/git/django-sample-app.git',
+        'url': 'https://github.com/<yourGitHugUser>/django-sample-app.git',
+#        'url': '/home/git/django-sample-app.git',
         'branch': 'master'
     },
 }
