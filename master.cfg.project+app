@@ -19,7 +19,8 @@ repos = {
         'branch': 'master'
     },
     'webapp': {
-        'url': 'https://github.com/danirus/django-sample-app.git',
+#        'url': 'https://github.com/danirus/django-sample-app.git',
+        'url': '/home/git/django-sample-app.git',
         'branch': 'master'
     },
 }
@@ -83,10 +84,13 @@ webapp_chfilter = filter.ChangeFilter(repository=repos['webapp']['url'],
 webapp_sch = SingleBranchScheduler(
     name='webapp-sch',
     change_filter=webapp_chfilter,
-    builderNames=['webapp-py27dj14', 'webapp-py27dj15', 'webapp-py32dj15'],
+    builderNames=['webapp-py27dj14', 
+                  'webapp-py27dj15', 
+                  'webapp-py32dj15'],
     treeStableTimer=None)
 
-c['schedulers'] = [webproject_sch, webapp_sch]
+c['schedulers'] = [webproject_sch, 
+                   webapp_sch]
 
 ####### BUILDERS
 
@@ -107,23 +111,23 @@ webproject_steps = [
                  descriptionDone='installed',
                  command=['pip', 'install', '-r', 'requirements.pip'],
                  haltOnFailure=True),
-    ShellCommand(name='coverage', 
-                 description='running coverage',
-                 descriptionDone='coverage',
-                 command=['python', 
+    ShellCommand(name='tests', 
+                 description='testing',
+                 descriptionDone='tested',
+                 command=['coverage', 
+                          'run',
                           'manage.py', 
-                          'test_coverage', 
+                          'test', 
                           'polls',
                           '--settings=mysite.test_settings'],
                  haltOnFailure=True),
-    ShellCommand(name='tests',
-                 description='testing',
-                 descriptionDone='tested',
-                 command=['python',
-                          'manage.py',
-                          'test',
-                          'polls',
-                          '--settings=mysite.test_settings'],
+    ShellCommand(name='coverage',
+                 description='creating coverage report',
+                 descriptionDone='coverage report created',
+                 command=['coverage',
+                          'report',
+                          '--include=polls/*',
+                          '--omit=polls/tests/*'],
                  haltOnFailure=True),
 ]
 webproject_factory = BuildFactory(webproject_steps)
@@ -134,14 +138,22 @@ webapp_steps = [
         haltOnFailure=True),
     ShellCommand(name='requirements',
                  description='installing requirements',
-                 descriptionDone='installed',
+                 descriptionDone='requirements installed',
                  command=['pip', 'install', '-r', 'requirements_tests.pip'],
                  haltOnFailure=True),
     ShellCommand(name='tests',
                  description='testing',
                  descriptionDone='tested',
-                 command=['python', 'setup.py', 'test'],
+                 command=['coverage', 'run', 'setup.py', 'test'],
                  haltOnFailure=True),
+    ShellCommand(name='coverage',
+                 description='creating coverage report',
+                 descriptionDone='coverage report created',
+                 command=['coverage', 
+                          'report', 
+                          '--include=sample_app/*', 
+                          '--omit=sample_app/tests/*'],
+                 haltOnFailure=True)
 ]
 webapp_factory = BuildFactory(webapp_steps)
 
