@@ -156,11 +156,11 @@ This is the directory structure of `/home/buildbot`:
 
 ### 3.4 Configure Buildbot in 3 steps
 
-I approach the configuration in three steps to make a kind of tutorial. Skip it if you want by using the file `master.cfg.final`.
+I approach the configuration in three steps to make a kind of a tutorial. Skip it if you already have a good understanding of Buildbot concepts. Then simply use the file `master.cfg.project+app+connected`. Otherwise go through the 3 steps.
 
-In the first step Buildbot will build only the project. Then I'll add builds for the app. And at the end I'll add steps to trigger the build of the project after building the app. Read Continuous Integration of webapps with Buildbot to get more wording introduction to this Buildbot Sample Configuration.
+In the first step Buildbot will build only the project. Then I'll add builds for the app. And at the end I'll add steps to trigger the build of the project after building the app. Read Continuous Integration of webapps with Buildbot to get a more wording introduction to this example.
 
-In the following steps you will run Buidlbot from the command line. Use the script provided in the following up sections  to integrate it as part of the server startup process. 
+*Note: In the following steps you will run Buidlbot from the command line. Use the script provided in the following up sections  to integrate it as part of the server startup process.* 
 
 #### 3.4.1 Setup only the web project
 
@@ -204,7 +204,64 @@ Buildbot's master components (change source, schedulers, filters, build steps, b
 
 #### 3.4.2 Add the setup for the web app
 
+Buildbot allows you to build more than one software project. You can run as many as you want. The master configuration file for this step adds the Django app to the building process. Copy the `master.cfg.project+app` file to your `/home/buildbot/master/` directory and rename it to `master.cfg`. 
+
+Edit the file and replace the web app URL with your own. Almost at the top of the file you will find the `repos` dictionary. Just edit the URL to satisfy the location you use:
+
+    repos = {
+        'webproject': {
+            'url': '/home/git/django-sample-project.git',
+            'branch': 'master'
+        },
+        'webapp': {
+            'url': 'https://github.com/<yourGitHugUser>/django-sample-app.git',
+            #'url': '/home/git/django-sample-app.git',
+            'branch': 'master'
+        },
+    }
+
+If you want to customise the SMTP settings to receive email notification on failed builds, adapt `smtp_kwargs` and remove the hash from the 3 lines defining the MailNotifier, down in the `status`.
+
+Then restart the master (no need to restart the slaves):
+
+    buildbot@@server:~$ buildbot restart master
+
+The configuration doesn't change much, now:
+
+* The status allows notification from GitHub.
+* There's a new scheduler for the webapp.
+* Two filters to see whether source code changes come from the project or the app. 
+* Build steps to build the app.
+* A build factory to putgroup together those new build steps.
+* Three new builders for the app to say what steps will build the app and in which slave.
+
+An image is worth a thousand words:
+
+![Buildbot configuration layout to build a Django web project and a Django web app](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App.png)
+
+
 #### 3.4.3 Build the project after building the app
+
+Are you looking for a Continuous Integration tool to build a project based on build results of other project? Buildbot does it hands down and Plugins-free.
+
+The master configuration file for this step runs project builds once their app counterparts have run successfully. What does that mean?
+
+* A web app source code change lands in Buildbot.
+* Buildbot triggers the three app builders.
+* The last step of each builder will trigger the project builder that runs under the very same conditions (Python+Django combination) only if the app did build successfully. 
+
+Copy the `master.cfg.project+app+connected` file to your `/home/buildbot/master/` directory and rename it to `master.cfg`. 
+
+The new configuration adds:
+
+* Three triggerable schedulers that will be called from the app builders.
+* Three new special build steps called Trigger, that will call the triggerable schedulers.
+* One specific BuildFactory for each app Builder (rather than one for the three), as to add the Trigger step at the end of each BuildFactory. This way each app build triggers the corresponding project builder.
+
+Again, an image's better to illustrates the new scenario:
+
+![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App-Triggerable.png)
+
 
 ### 3.5 Web servers setup
 
