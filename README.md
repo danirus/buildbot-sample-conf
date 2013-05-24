@@ -269,3 +269,9 @@ Again, an image's better to illustrates the new scenario:
 
 #### 3.5.2 Nginx
 
+### 3.6 Run at system startup
+
+
+### 3.7 Image for build results
+
+
