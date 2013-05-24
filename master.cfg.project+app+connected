@@ -261,8 +261,8 @@ c['status'] = [
 # installation's html.WebStatus home page (linked to the
 # 'titleURL') and is embedded in the title of the waterfall HTML page.
 
-c['title'] = "Daniel Rus Morales"
-c['titleURL'] = "http://danir.us"
+c['title'] = "Buildbot-CI of Webapps"
+c['titleURL'] = "https://github.com/danirus/buildbot-sample-conf"
 
 # the 'buildbotURL' string should point to the location where the buildbot's
 # internal web server (usually the html.WebStatus page) is visible. This
@@ -270,7 +270,7 @@ c['titleURL'] = "http://danir.us"
 # with an externally-visible host name which the buildbot cannot figure out
 # without some help.
 
-c['buildbotURL'] = "http://localhost:8011/"
+c['buildbotURL'] = "http://localhost:8010/"
 
 ####### DB URL
 

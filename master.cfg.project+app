@@ -231,8 +231,8 @@ c['status'] = [
 # installation's html.WebStatus home page (linked to the
 # 'titleURL') and is embedded in the title of the waterfall HTML page.
 
-c['title'] = "Buildbot-CI | Django web project + web app"
-c['titleURL'] = "https://github.com/danirus/django-sample-project"
+c['title'] = "Buildbot-CI of Webapps"
+c['titleURL'] = "https://github.com/danirus/buildbot-sample-conf"
 
 # the 'buildbotURL' string should point to the location where the buildbot's
 # internal web server (usually the html.WebStatus page) is visible. This
