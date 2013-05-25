@@ -1,0 +1,39 @@
+#SLAVE_RUNNER=/usr/bin/buildslave
+SLAVE_RUNNER=/home/buildbot/slaves/activate_venv.sh
+
+# NOTE: SLAVE_ENABLED has changed its behaviour in version 0.8.4. Use
+# 'true|yes|1' to enable instance and 'false|no|0' to disable. Other
+# values will be considered as syntax error.
+
+SLAVE_ENABLED[1]=0                # 1-enabled, 0-disabled
+SLAVE_NAME[1]="buildslave #1"     # short name printed on start/stop
+SLAVE_USER[1]="buildbot"          # user to run slave as
+SLAVE_BASEDIR[1]=""               # basedir to slave (absolute path)
+SLAVE_OPTIONS[1]=""               # buildbot options
+SLAVE_PREFIXCMD[1]=""             # prefix command, i.e. nice, linux32, dchroot
+
+SLAVEBASE="/home/buildbot/slaves"
+
+# Slave 1
+SLAVE_ENABLED[1]=1
+SLAVE_NAME[1]="buildslave #1 py27-dj14"
+SLAVE_USER[1]="buildbot"
+SLAVE_BASEDIR[1]="${SLAVEBASE}/py27-dj14/slave"
+SLAVE_OPTIONS[1]=""
+SLAVE_PREFIXCMD[1]=""
+
+# Slave 2
+SLAVE_ENABLED[2]=1
+SLAVE_NAME[2]="buildslave #2 py27-dj15"
+SLAVE_USER[2]="buildbot"
+SLAVE_BASEDIR[2]="${SLAVEBASE}/py27-dj15/slave"
+SLAVE_OPTIONS[2]=""
+SLAVE_PREFIXCMD[2]=""
+
+# Slave 3
+SLAVE_ENABLED[3]=1
+SLAVE_NAME[3]="buildslave #3 py32-dj15"
+SLAVE_USER[3]="buildbot"
+SLAVE_BASEDIR[3]="${SLAVEBASE}/py32-dj15/slave"
+SLAVE_OPTIONS[3]=""
+SLAVE_PREFIXCMD[3]=""
