@@ -271,7 +271,13 @@ Again, an image's better to illustrates the new scenario:
 
 ### 3.6 Run at system startup
 
+Use the following files with the init scripts provided by the Debian/Ubuntu package for Buildbot. They will make Buildbot run the slaves in their appropriate virtualenv:
 
-### 3.7 Image for build results
+* Copy `etc.default.buildmaster` to `/etc/default/buildmaster`
+* Copy `etc.default.buildslave` to `/etc/default/buildslave`
+* Copy `activate_venv.sh` to `/home/buildbot/slaves`
 
+Doing so there won't be any conflict with Buildbot packages in case of updates from Debian/Ubuntu.
+
+### 3.7 Build results images
 
