@@ -1,0 +1,11 @@
+server {
+	listen 80;
+	server_name buildbot.example.com;
+	location / {
+		proxy_pass http://localhost:8010;
+	}
+	location /change_hook/github/ {
+		allow 207.97.227.253/32 50.57.128.197/32 108.171.174.178/32 50.57.231.61/32 204.232.175.64/27 192.30.252.0/22;
+		deny all;
+	}
+}
