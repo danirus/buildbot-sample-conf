@@ -4,28 +4,28 @@ This document describes how to do continuous integration of webapps with Buildbo
 
 ## 1. Scenario
 
- 1. One public Django pluggable application.
- 2. One private Django project that uses the previous application.
- 3. Buildbot has to run tests for both, the app and the project.
- 4. Buildbot will build the app when changes hit app's repository.
- 5. Buildbot will build the project when changes hit project's repository and right after building the app.
- 6. Project's repository is private and hosted in an in-house server.
- 7. App's repository is public and hosted in GitHub.
- 8. App and project have to be build under supported versions of Python/Django.
- 9. Buildbot has to produce green or red images to highlight build results.
+1. One public Django pluggable application.
+2. One private Django project that uses the previous application.
+3. Buildbot has to run tests for both, the app and the project.
+4. Buildbot will build the app when changes hit app's repository.
+5. Buildbot will build the project when changes hit project's repository and right after building the app.
+6. Project's repository is private and hosted in an in-house server.
+7. App's repository is public and hosted in GitHub.
+8. App and project have to be build under supported versions of Python/Django.
+9. Buildbot has to produce green or red images to highlight build results.
 10. Buildbot has to show a web with build results.
 
 
 ## 2. Solution
 
- 1. Buildbot's master and slave will live in the same machine.
- 2. There will be 3 Python virtualenv to support Django v1.4/v1.5 under Python v2.7, and Django v1.5 under Python v3.2.
- 3. Buildbot will have 3 slaves one per virtualenv.
- 4. Virtualenvs will get active at OS startup time, before launching slaves.
- 5. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
- 6. Buildbot will accept HTTP POST requests from GitHub.
- 7. App's GitHub repository will get a new WebHook URL pointing to Buildbot's web interface.
- 8. Apache or Nginx will handle requests to both Buildbot web interface.
+1. Buildbot's master and slave will live in the same machine.
+2. There will be 3 Python virtualenv to support Django v1.4/v1.5 under Python v2.7, and Django v1.5 under Python v3.2.
+3. Buildbot will have 3 slaves one per virtualenv.
+4. Virtualenvs will get active at OS startup time, before launching slaves.
+5. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
+6. Buildbot will accept HTTP POST requests from GitHub.
+7. App's GitHub repository will get a new WebHook URL pointing to Buildbot's web interface.
+8. Apache or Nginx will handle requests to both Buildbot web interface.
 
 
 ## 3. Setup
