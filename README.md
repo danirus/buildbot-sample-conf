@@ -32,7 +32,7 @@ This document describes how to do continuous integration of webapps with Buildbo
 
 The following setup has been made in a fresh KVM virtual machine running Ubuntu Server 12.04 with the following extra packages installed:
 
-    root@server:~# apt-get install apache2 python-pip python-virtualenv python3 git tree 
+    root@server:~# apt-get install apache2 python-pip python-virtualenv python3 git
 
 The Setup consists of the following steps:
 
@@ -126,33 +126,6 @@ Create the slaves:
     buildbot@server:~$ buildslave create-slave slaves/py27-dj15/slave localhost:9989 py27dj15 pass
     buildbot@server:~$ buildslave create-slave slaves/py32-dj15/slave localhost:9989 py32dj15 pass
 
-This is the directory structure of `/home/buildbot`:
-
-    buildbot@server:~$ tree -d -L 3
-    .
-    ├── master
-    │   └── public_html
-    └── slaves
-        ├── py27-dj14
-        │   ├── bin
-        │   ├── include
-        │   ├── lib
-        │   ├── local
-        │   └── slave
-        ├── py27-dj15
-        │   ├── bin
-        │   ├── include
-        │   ├── lib
-        │   ├── local
-        │   └── slave
-        └── py32-dj15
-            ├── bin
-            ├── include
-            ├── lib
-            └── slave
-
-    20 directories
-
 
 ### 3.4 Configure Buildbot in 3 steps
 
@@ -220,7 +193,7 @@ Edit the file and replace the web app URL with your own. Almost at the top of th
         },
     }
 
-If you want to customise the SMTP settings to receive email notification on failed builds, adapt `smtp_kwargs` and remove the hash from the 3 lines defining the MailNotifier, down in the `status`.
+To customise the SMTP settings and receive email notification on failed builds adapt the `smtp_kwargs` and remove the hash from the 3 lines defining the MailNotifier.
 
 Then restart the master (no need to restart the slaves):
 
