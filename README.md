@@ -12,8 +12,8 @@ This document describes how to do continuous integration of webapps with Buildbo
  6. Project's repository is private and hosted in an in-house server.
  7. App's repository is public and hosted in GitHub.
  8. App and project have to be build under supported versions of Python/Django.
- 9. Buildbot has to show a public web with app's builds results.
- 10. Buildbot has to show a private web with both app's and project's builds results.
+ 9. Buildbot has to produce green or red images to highlight build results.
+10. Buildbot has to show a web with build results.
 
 
 ## 2. Solution
@@ -25,7 +25,7 @@ This document describes how to do continuous integration of webapps with Buildbo
  5. Project's repository in the in-house server will get a new `post-receive` hook script that will notify Buildbot on changes.
  6. Buildbot will accept HTTP POST requests from GitHub.
  7. App's GitHub repository will get a new WebHook URL pointing to Buildbot's web interface.
- 8. Apache or Nginx will handle requests to both public and private Buildbot web interfaces.
+ 8. Apache or Nginx will handle requests to both Buildbot web interface.
 
 
 ## 3. Setup
@@ -263,11 +263,14 @@ Again, an image's better to illustrates the new scenario:
 ![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App-Triggerable.png)
 
 
-### 3.5 Web servers setup
+### 3.5 Web server setup
 
-#### 3.5.1 Apache
+Buildbot's web interface can be publicly reacheable through Apache, Nginx or any other web server with proxy capabilities. Checkout the simple sample virtual host configuration files provided for both Apache and Nginx:
 
-#### 3.5.2 Nginx
+ * [apache.vhost](https://github.com/danirus/buildbot-sample-conf/blob/master/apache.vhost)
+ * [nginx.vhost](https://github.com/danirus/buildbot-sample-conf/blob/master/nginx.vhost)
+
+The configuration makes the web server act as a proxy to pass all incoming requests to buildbot. It also setup restricted access to the path `/change_hook/github/` through which GitHub will post source code changes to Buildbot. Be sure that the list of IP addresses included are the same GitHub enables after setting up your WebHook.
 
 ### 3.6 Run at system startup
 
