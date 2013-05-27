@@ -236,6 +236,15 @@ Again, an image's better to illustrates the new scenario:
 ![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App-Triggerable.png)
 
 
+### 3.6 Do continuous integration
+
+The app and the project include a couple of test cases to play around with Continuos Integration.
+
+The app comes with a function called `do_something` (module [utils.py](https://github.com/danirus/django-sample-app/blob/master/sample_app/utils.py)) that is used in the function `do_otherthing`, in the [utils.py](https://github.com/danirus/django-sample-project/blob/master/polls/utils.py) module of the project. Both, app and project, include tests for their respective functions.
+
+Change `do_something` to make it return a string rather than an integer and adapt the test case in `sample_app/tests/utils_tests.py` to make the app pass their own tests (run them manually first with `python setup test.py`). Then push the changes to the repository and see that the project fails to build. Be sure that your project uses your app's repository in the requirements file rather than mine, otherwise it won't fail.
+
+
 ### 3.5 Web server setup
 
 Buildbot's web interface can be publicly reacheable through Apache, Nginx or any other web server with proxy capabilities. Checkout the simple sample virtual host configuration files provided for both Apache and Nginx:
