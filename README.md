@@ -39,7 +39,8 @@ The Setup consists of the following steps:
 2. Setup the GitHub Git repository for the Django app
 3. Install Buildbot
 4. Configure Buildbot
-5. Web servers setup
+5. Web server setup
+6. Run at system startup
 
 
 ### 3.1 Setup the in-house Git repository for the Django project
