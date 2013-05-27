@@ -236,7 +236,7 @@ Again, an image's better to illustrates the new scenario:
 ![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App-Triggerable.png)
 
 
-### 3.6 Do continuous integration
+### 3.5 Do continuous integration
 
 The app and the project include a couple of test cases to play around with Continuos Integration.
 
@@ -245,7 +245,7 @@ The app comes with a function called `do_something` (module [utils.py](https://g
 Change `do_something` to make it return a string rather than an integer and adapt the test case in `sample_app/tests/utils_tests.py` to make the app pass their own tests (run them manually first with `python setup test.py`). Then push the changes to the repository and see that the project fails to build. Be sure that your project uses your app's repository in the requirements file rather than mine, otherwise it won't fail.
 
 
-### 3.5 Web server setup
+### 3.6 Web server setup
 
 Buildbot's web interface can be publicly reacheable through Apache, Nginx or any other web server with proxy capabilities. Checkout the simple sample virtual host configuration files provided for both Apache and Nginx:
 
@@ -254,7 +254,7 @@ Buildbot's web interface can be publicly reacheable through Apache, Nginx or any
 
 The configuration makes the web server act as a proxy to pass all incoming requests to buildbot. It also setup restricted access to the path `/change_hook/github/` through which GitHub will post source code changes to Buildbot. Be sure that the list of IP addresses included are the same GitHub enables after setting up your WebHook.
 
-### 3.6 Run at system startup
+### 3.7 Run at system startup
 
 Use the following files with the init scripts provided by the Debian/Ubuntu package for Buildbot. They will make Buildbot run the slaves in their appropriate virtualenv:
 
