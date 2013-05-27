@@ -1,6 +1,6 @@
 # Buildbot Sample Configuration
 
-This document describes how to do continuous integration of webapps with Buildbot. It contains configuration files for Buildbot, Git and Apache.
+This document describes how to do continuous integration of webapps with Buildbot. It contains configuration files for Buildbot, Git, Apache and Nginx.
 
 ## 1. Scenario
 
