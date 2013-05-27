@@ -1,6 +1,6 @@
 # Buildbot Sample Configuration
 
-This document describes how to do continuous integration of webapps with Buildbot. It contains configuration files for Buildbot, Git, Apache and Nginx.
+This document describes how to do continuous integration of webapps with Buildbot. It contains configuration files for Buildbot, Git, Apache and Nginx. It's the follow up of [this story](http://danir.us/blog/stories/2013/may/27/continuous-integration-web-apps-buildbot/).
 
 ## 1. Scenario
 
@@ -131,7 +131,7 @@ Create the slaves:
 
 I approach the configuration in three steps to make a kind of a tutorial. Skip it if you already have a good understanding of Buildbot concepts. Then simply use the file `master.cfg.project+app+connected`. Otherwise go through the 3 steps.
 
-In the first step Buildbot will build only the project. Then I'll add builds for the app. And at the end I'll add steps to trigger the build of the project after building the app. Read Continuous Integration of webapps with Buildbot to get a more wording introduction to this example.
+In the first step Buildbot will build only the project. Then I'll add builds for the app. And at the end I'll add steps to trigger the build of the project after building the app. Read [Continuous Integration of webapps with Buildbot](http://danir.us/blog/stories/2013/may/27/continuous-integration-web-apps-buildbot/) to get a more wording introduction to this example.
 
 *Note: In the following steps you will run Buidlbot from the command line. Use the script provided in the following up sections  to integrate it as part of the server startup process.* 
 
