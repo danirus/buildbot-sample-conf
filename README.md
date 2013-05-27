@@ -4,16 +4,15 @@ This document describes how to do continuous integration of webapps with Buildbo
 
 ## 1. Scenario
 
-1. One public Django pluggable application.
-2. One private Django project that uses the previous application.
+1. One Django pluggable application.
+2. One Django project that uses the previous application.
 3. Buildbot has to run tests for both, the app and the project.
 4. Buildbot will build the app when changes hit app's repository.
 5. Buildbot will build the project when changes hit project's repository and right after building the app.
-6. Project's repository is private and hosted in an in-house server.
-7. App's repository is public and hosted in GitHub.
+6. Project's repository will be hosted in an in-house server.
+7. App's repository will be hosted in GitHub.
 8. App and project have to be build under supported versions of Python/Django.
-9. Buildbot has to produce green or red images to highlight build results.
-10. Buildbot has to show a web with build results.
+9. Build results have to be available through a web interface.
 
 
 ## 2. Solution
@@ -45,7 +44,7 @@ The Setup consists of the following steps:
 
 ### 3.1 Setup the in-house Git repository for the Django project
 
-[Django-sample-project](https://github.com/danirus/django-sample-project) it's an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/). It represents the private Django project for the sample configuration.
+[Django-sample-project](https://github.com/danirus/django-sample-project) it's an implementation of the official [Django tutorial](https://docs.djangoproject.com/en/1.5/intro/tutorial01/). It represents the Django project for the sample configuration.
 
 The following steps create the private in-house Git repository for the project. Create a git user and group, and add your username to the git group: 
 
@@ -254,6 +253,3 @@ Use the following files with the init scripts provided by the Debian/Ubuntu pack
 * Copy `activate_venv.sh` to `/home/buildbot/slaves`
 
 Doing so there won't be any conflict with Buildbot packages in case of updates from Debian/Ubuntu.
-
-### 3.7 Build results images
-
