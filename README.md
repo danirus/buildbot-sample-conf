@@ -80,7 +80,9 @@ Buildbot's path for GitHub defaults to `change_hook/github`.
 
 ### 3.3 Install Buildbot
 
-Create the user `buildbot` and install the package:
+Use this [PPA](https://launchpad.net/~danirus/+archive/buildbot) to install Buildbot v0.8.7 in Ubuntu 12.04. The release provided by default with Ubuntu 12.04 (Buildbot v0.8.5) contains a bug that produces HTTP 500 Server Errors when receiving notifications from GitHub. Version 0.8.7 solves that bug and many others. 
+
+After installing the PPA create the user `buildbot` and install the package:
 
     root@server:~# useradd -m -s /bin/bash buildbot
     root@server:~# apt-get install buildbot
