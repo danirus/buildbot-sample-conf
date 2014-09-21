@@ -2,7 +2,7 @@ server {
 	listen 80;
 	server_name buildbot.example.com;
 	location / {
-		proxy_pass http://localhost:8010;
+		proxy_pass http://buildbot;
 	}
 	location /change_hook/github {
 		allow 207.97.227.253/32;
@@ -12,5 +12,10 @@ server {
 		allow 204.232.175.64/27;
 		allow 192.30.252.0/22;
 		deny all;
+		proxy_pass http://buildbot;
 	}
+}
+
+upstream buildbot {
+	server localhost:8010;
 }
