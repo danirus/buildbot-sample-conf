@@ -175,7 +175,7 @@ Builders should be idle now in the web interface. Click on any of the builders a
 
 Buildbot's master components (change source, schedulers, filters, build steps, builder factories and builders) required for this step are represented in the following figure:
 
-![Buildbot configuration layout to build a Django web project](http://danir.us/media/pictures/2013/May/22/Buildbot-Django-Project.png)
+![Buildbot configuration layout to build a Django web project](http://danir.us/media/pictures/2013/Jul/26/Buildbot-Django-Project.png)
 
 #### 3.4.2 Add the setup for the web app
 
@@ -212,7 +212,7 @@ The configuration doesn't change much, now:
 
 An image is worth a thousand words:
 
-![Buildbot configuration layout to build a Django web project and a Django web app](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App.png)
+![Buildbot configuration layout to build a Django web project and a Django web app](http://danir.us/media/pictures/2013/Jul/26/Buildbot-Django-Project-and-App.png)
 
 
 #### 3.4.3 Build the project after building the app
@@ -235,7 +235,7 @@ The new configuration adds:
 
 Again, an image's better to illustrates the new scenario:
 
-![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/May/21/Buildbot-Django-Project-and-App-Triggerable.png)
+![Buildbot configuration layout to build a Django web project and a Django web app, with triggerable schedulers](http://danir.us/media/pictures/2013/Jul/26/Buildbot-Django-Project-and-App-Triggerable.png)
 
 
 ### 3.5 Do continuous integration
